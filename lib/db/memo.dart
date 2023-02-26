@@ -7,9 +7,15 @@ class Memo {
   int? id;
   int musicId; // 外部キーmusic(id)
   String text; // メモ
+  int? ryoNum; // 良の数
+  int? kaNum; // 可の数
+  int? fukaNum; // 不可の数
+  int? maxCom; // 最大コンボ数
+  int? rendaNum; // 連打数
 
   // コンストラクタ
-  Memo({required this.id, required this.musicId, required this.text});
+  Memo({required this.id, required this.musicId, required this.text, this.ryoNum, 
+        this.kaNum, this.fukaNum, this.maxCom, this.rendaNum});
 
   // Map型のオブジェクトへ変換
   Map<String, Object?> toMap() {
@@ -17,6 +23,11 @@ class Memo {
       'id': id,
       'musicId': musicId,
       'text': text,
+      'ryoNum': ryoNum,
+      'kaNum': kaNum,
+      'fukaNum': fukaNum,
+      'maxCom': maxCom,
+      'rendaNum': rendaNum
     };
   }
 
@@ -39,7 +50,7 @@ class Memo {
   static Future<List<Memo>> getMemos(int musicId) async {
     final Database db = await DatabaseManager.getDatabase();
     final List<Map<String, dynamic>> maps = await db.query('memo',
-        columns: ["id","musicId", "text"],
+        columns: ["id", "musicId", "text"],
         where: 'musicId = ?',
         whereArgs: [musicId]);
     return List.generate(maps.length, (i) {
@@ -47,6 +58,11 @@ class Memo {
         id: maps[i]['id'],
         musicId: maps[i]['musicId'],
         text: maps[i]['text'],
+        ryoNum: maps[i]['ryoNum'],
+        kaNum: maps[i]['kaNum'],
+        fukaNum: maps[i]['fukaNum'],
+        maxCom: maps[i]['maxCom'],
+        rendaNum: maps[i]['rendaNum']
       );
     });
   }

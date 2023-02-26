@@ -17,13 +17,22 @@ class Music {
   DateTime? finishedAt; // 完了日時
 
   // コンストラクタ
-  Music({required this.id, required this.name});
+  Music({ required this.id, required this.name, this.kind, this.count, this.difficulty,
+        this.target, this.description, this.deadline, this.finishedAt, required this.isFinished });
 
   // Map型のオブジェクトへ変換
   Map<String, Object?> toMap() {
     return {
       'id': id,
       'name': name,
+      'kind': kind,
+      'count': count,
+      'difficulty': difficulty,
+      'target': target,
+      'description': description,
+      'isFinished': isFinished ? 1 : 0,
+      'deadline': deadline,
+      'finishedAt': finishedAt
     };
   }
 
@@ -50,6 +59,14 @@ class Music {
       return Music(
         id: maps[i]['id'],
         name: maps[i]['name'],
+        kind: maps[i]['kind'],
+        count: maps[i]['count'],
+        difficulty: maps[i]['difficuly'],
+        target: maps[i]['target'],
+        description: maps[i]['description'],
+        isFinished: (maps[i]['isFinished'] == 1) ? true : false,
+        deadline: maps[i]['deadline'],
+        finishedAt: maps[i]['finishedAt']
       );
     });
   }

@@ -18,8 +18,19 @@ class _HomePageState extends State<HomePage> {
   String? _kind = "おに";
   var _selectedvalue;
 
+  void insertMusic(Music m) async {
+    Music _music = m;
+    await Music.insertMusic(_music);
+    final List<Music> musics = await Music.getMusics();
+    setState(() {
+      _musicList = musics;
+      _selectedvalue = null;
+    });
+    myController.clear();
+  }
+
   void updateMusic(Music m) async {
-    Music newMusic = Music(name: m.name, id: m.id, isFinished: m.isFinished);
+    Music newMusic = m;
     await Music.updateMusic(newMusic);
     final List<Music> musics = await Music.getMusics();
     setState(() {
@@ -70,11 +81,13 @@ class _HomePageState extends State<HomePage> {
                 return Card(
                   child: ListTile(
                     leading: Checkbox(
-                        value: _flag,
+                        value: _musicList[index].isFinished,
                         onChanged: (value) {
                           setState(() {
-                            _flag = !_flag;
+                            _musicList[index].isFinished =
+                                !_musicList[index].isFinished;
                           });
+                          Music.updateMusic(_musicList[index]);
                         }),
                     title: Text('${_musicList[index].name}'),
                     onTap: () {
@@ -97,7 +110,8 @@ class _HomePageState extends State<HomePage> {
                                 return HomePageEditDialog(
                                     music: _musicList[index],
                                     updateMusic: updateMusic,
-                                    deleteMusic: deleteMusic);
+                                    deleteMusic: deleteMusic,
+                                    insertMusic: insertMusic);
                               }).then((value) {
                             myController.clear();
                             setState(() {});
@@ -105,7 +119,6 @@ class _HomePageState extends State<HomePage> {
                         },
                         icon: const Icon(
                           Icons.edit,
-                          color: Colors.black,
                           size: 18,
                         ),
                       ),
@@ -126,55 +139,17 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               showDialog(
                   context: context,
-                  builder: (_) => AlertDialog(
-                        title: Text("新規楽曲登録"),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text('追加したい曲の情報を入力するドン！'),
-                            TextField(controller: myController),
-                            Text('難易度'),
-                            DropdownButton(
-                              items: const [
-                                DropdownMenuItem(
-                                    value: "おに", child: Text("おに")),
-                                DropdownMenuItem(
-                                    value: "おに裏", child: Text("おに裏")),
-                                DropdownMenuItem(
-                                    value: "むずかしい", child: Text("むずかしい")),
-                                DropdownMenuItem(
-                                    value: "ふつう", child: Text("ふつう")),
-                                DropdownMenuItem(
-                                    value: "かんたん", child: Text("かんたん")),
-                              ],
-                              value: _kind,
-                              onChanged: (String? value) {
-                                setState(() {
-                                  _kind = value;
-                                });
-                              },
-                            ),
-                            ElevatedButton(
-                              child: Text('保存'),
-                              onPressed: () async {
-                                Music _music = Music(
-                                    name: myController.text,
-                                    id: null,
-                                    isFinished: _flag);
-                                await Music.insertMusic(_music);
-                                final List<Music> musics =
-                                    await Music.getMusics();
-                                setState(() {
-                                  _musicList = musics;
-                                  _selectedvalue = null;
-                                });
-                                myController.clear();
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        ),
-                      ));
+                  builder: (context) {
+                    return HomePageEditDialog(
+                        music: new Music(id: null, name: '', isFinished: false),
+                        updateMusic: updateMusic,
+                        deleteMusic: deleteMusic,
+                        insertMusic: insertMusic);
+                  }).then((value) {
+                myController.clear();
+                setState(() {});
+              });
+              ;
             },
           ),
           const SizedBox(height: 20),

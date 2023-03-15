@@ -15,6 +15,7 @@ class MusicPage extends StatefulWidget {
 class _MusicPageState extends State<MusicPage> {
   List _memoList = [];
   final myController = TextEditingController();
+  final ryoController = TextEditingController();
 
   Future<void> initialize() async {
     _memoList = await Memo.getMemos(widget.id);
@@ -42,20 +43,34 @@ class _MusicPageState extends State<MusicPage> {
               itemBuilder: (context, index) {
                 return Card(
                   child: ListTile(
-                    leading: Text(
-                      'ID ${_memoList[index].id}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    title: Text('${_memoList[index].text}'),
+                    title: Text(
+                        '良:${_memoList[index].ryoNum} ${_memoList[index].text}'),
                     onTap: () {
                       // 編集ダイアログ実装
                       myController.text = _memoList[index].text;
+                      ryoController.text = (_memoList[index].ryoNum != null)
+                          ? _memoList[index].ryoNum.toString()
+                          : "";
                       showDialog<void>(
                           context: context,
                           builder: (_) => AlertDialog(
                                 content: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: <Widget>[
+                                    Text("良"),
+                                    SizedBox(
+                                      width: 80,
+                                      child: TextField(
+                                        textAlign: TextAlign.center,
+                                        controller: ryoController,
+                                        maxLines: 1,
+                                        decoration: InputDecoration(
+                                            border: UnderlineInputBorder()),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 10,
+                                    ),
                                     TextField(
                                       maxLines: 10,
                                       keyboardType: TextInputType.multiline,
@@ -142,9 +157,17 @@ class _MusicPageState extends State<MusicPage> {
           showDialog(
               context: context,
               builder: (_) => AlertDialog(
-                  title: Text("メモを登録"),
+                  title: Text("記録・メモを登録"),
                   content:
                       Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                    Text("良の数"),
+                    SizedBox(
+                      width: 100,
+                      child: TextField(
+                          maxLines: 1,
+                          keyboardType: TextInputType.number,
+                          controller: ryoController),
+                    ),
                     Text('${widget.musicName}のメモを入力するドン！'),
                     TextField(
                         maxLines: 10,
@@ -157,6 +180,7 @@ class _MusicPageState extends State<MusicPage> {
                       onPressed: () async {
                         Memo _memo = Memo(
                             id: null,
+                            ryoNum: int.parse(ryoController.text),
                             text: myController.text,
                             musicId: widget.id);
                         await Memo.insertMemo(_memo);
@@ -165,6 +189,7 @@ class _MusicPageState extends State<MusicPage> {
                           _memoList = memos;
                         });
                         myController.clear();
+                        ryoController.clear();
                         Navigator.pop(context);
                       },
                     ),

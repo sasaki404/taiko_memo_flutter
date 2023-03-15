@@ -12,11 +12,12 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Memo for Taiko Music',
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.dark, // システム設定に依存する
       home: HomePage(),
     );
   }
 }
-

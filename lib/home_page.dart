@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_practice/home_page_edit_dialog.dart';
 import 'dart:async';
 import 'music_page.dart';
 import 'db/music.dart';
@@ -12,9 +13,40 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Music> _musicList = [];
+  bool _flag = false;
   final myController = TextEditingController();
-  final upDateController = TextEditingController();
+  String? _kind = "おに";
   var _selectedvalue;
+
+  void insertMusic(Music m) async {
+    Music _music = m;
+    await Music.insertMusic(_music);
+    final List<Music> musics = await Music.getMusics();
+    setState(() {
+      _musicList = musics;
+      _selectedvalue = null;
+    });
+    myController.clear();
+  }
+
+  void updateMusic(Music m) async {
+    Music newMusic = m;
+    await Music.updateMusic(newMusic);
+    final List<Music> musics = await Music.getMusics();
+    setState(() {
+      _musicList = musics;
+      _selectedvalue = null;
+    });
+  }
+
+  void deleteMusic(int id) async {
+    await Music.deleteMusic(id);
+    final List<Music> musics = await Music.getMusics();
+    setState(() {
+      _musicList = musics;
+    });
+    myController.clear();
+  }
 
   Future<void> initialize() async {
     _musicList = await Music.getMusics();
@@ -39,7 +71,7 @@ class _HomePageState extends State<HomePage> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               // 非同期通信未完了のとき
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             }
@@ -48,10 +80,15 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 return Card(
                   child: ListTile(
-                    leading: Text(
-                      'ID ${_musicList[index].id}',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    leading: Checkbox(
+                        value: _musicList[index].isFinished,
+                        onChanged: (value) {
+                          setState(() {
+                            _musicList[index].isFinished =
+                                !_musicList[index].isFinished;
+                          });
+                          Music.updateMusic(_musicList[index]);
+                        }),
                     title: Text('${_musicList[index].name}'),
                     onTap: () {
                       Navigator.push(
@@ -62,112 +99,30 @@ class _HomePageState extends State<HomePage> {
                                 musicName: _musicList[index].name)),
                       );
                     },
+                    // 編集ボタン
                     trailing: SizedBox(
                       child: IconButton(
                         onPressed: () {
                           myController.text = _musicList[index].name;
                           showDialog<void>(
                               context: context,
-                              builder: (_) => AlertDialog(
-                                    title: Text("楽曲情報編集"),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        Text('楽曲名'),
-                                        TextField(controller: myController),
-                                        ButtonBar(children: <Widget>[
-                                          ElevatedButton.icon(
-                                            label: const Text(
-                                              '保存',
-                                              style: TextStyle(fontSize: 11),
-                                            ),
-                                            icon: const Icon(
-                                              Icons.save,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
-                                            onPressed: () async {
-                                              Music _music = Music(
-                                                  name: myController.text,
-                                                  id: _musicList[index].id);
-                                              await Music.updateMusic(_music);
-                                              final List<Music> musics =
-                                                  await Music.getMusics();
-                                              setState(() {
-                                                _musicList = musics;
-                                                _selectedvalue = null;
-                                              });
-                                              myController.clear();
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          ElevatedButton.icon(
-                                            label: const Text(
-                                              '削除',
-                                              style: TextStyle(fontSize: 11),
-                                            ),
-                                            icon: const Icon(
-                                              Icons.delete_forever,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
-                                            onPressed: () {
-                                              showDialog(
-                                                  context: context,
-                                                  builder: (context) {
-                                                    return AlertDialog(
-                                                      title: Text("本当に削除しますか？"),
-                                                      actions: [
-                                                        TextButton(
-                                                          child: Text("はい"),
-                                                          onPressed: () async {
-                                                            await Music
-                                                                .deleteMusic(
-                                                                    _musicList[
-                                                                            index]
-                                                                        .id!);
-                                                            final List<Music>
-                                                                musics =
-                                                                await Music
-                                                                    .getMusics();
-                                                            setState(() {
-                                                              _musicList =
-                                                                  musics;
-                                                            });
-                                                            myController
-                                                                .clear();
-                                                            Navigator.pop(
-                                                                context);
-                                                            Navigator.pop(
-                                                                context);
-                                                          },
-                                                        ),
-                                                        TextButton(
-                                                            child: const Text(
-                                                                "いいえ"),
-                                                            onPressed: () {
-                                                              Navigator.pop(
-                                                                  context);
-                                                            })
-                                                      ],
-                                                    );
-                                                  });
-                                            },
-                                          ),
-                                        ])
-                                      ],
-                                    ),
-                                  )).then((value) {
+                              builder: (context) {
+                                return HomePageEditDialog(
+                                    music: _musicList[index],
+                                    updateMusic: updateMusic,
+                                    deleteMusic: deleteMusic,
+                                    insertMusic: insertMusic);
+                              }).then((value) {
                             myController.clear();
+                            setState(() {});
                           });
                         },
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.edit,
-                          color: Colors.black,
                           size: 18,
                         ),
                       ),
-                    ),
+                    ), // 編集ボタン終了
                   ),
                 );
               },
@@ -184,35 +139,20 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               showDialog(
                   context: context,
-                  builder: (_) => AlertDialog(
-                        title: Text("新規楽曲登録"),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text('追加したい曲の情報を入力するドン！'),
-                            TextField(controller: myController),
-                            ElevatedButton(
-                              child: Text('保存'),
-                              onPressed: () async {
-                                Music _music =
-                                    Music(name: myController.text, id: null);
-                                await Music.insertMusic(_music);
-                                final List<Music> musics =
-                                    await Music.getMusics();
-                                setState(() {
-                                  _musicList = musics;
-                                  _selectedvalue = null;
-                                });
-                                myController.clear();
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                        ),
-                      ));
+                  builder: (context) {
+                    return HomePageEditDialog(
+                        music: new Music(id: null, name: '', isFinished: false),
+                        updateMusic: updateMusic,
+                        deleteMusic: deleteMusic,
+                        insertMusic: insertMusic);
+                  }).then((value) {
+                myController.clear();
+                setState(() {});
+              });
+              ;
             },
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
         ],
       ),
     );

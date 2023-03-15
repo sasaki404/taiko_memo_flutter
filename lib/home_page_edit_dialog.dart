@@ -47,11 +47,12 @@ class _HomePageEditDialogState extends State<HomePageEditDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-        title: (widget.music.id != null)
-            ? const Text("楽曲情報編集")
-            : const Text("新規楽曲追加"),
-        // StatefulBuilderを使わないとドロップダウンが即時反映されない
-        content: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+      title: (widget.music.id != null)
+          ? const Text("楽曲情報編集")
+          : const Text("新規楽曲追加"),
+      // StatefulBuilderを使わないとドロップダウンが即時反映されない
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
           const Text('楽曲名'),
           TextField(controller: myController),
           const Text('難易度'),
@@ -87,78 +88,82 @@ class _HomePageEditDialogState extends State<HomePageEditDialog> {
                 });
               }),
           const Text("完了"),
-          ButtonBar(children: <Widget>[
-            Builder(builder: (context) {
-              return ElevatedButton.icon(
-                label: const Text(
-                  '保存',
-                  style: TextStyle(fontSize: 11),
-                ),
-                icon: const Icon(
-                  Icons.save,
-                  color: Colors.white,
-                  size: 18,
-                ),
-                onPressed: () {
-                  if (widget.music.id != null) {
-                    Music newMusic = Music(
-                        name: myController.text,
-                        id: widget.music.id,
-                        kind: _kind,
-                        count: int.parse(_count ?? ''),
-                        isFinished: _flag);
-                    widget.updateMusic(newMusic);
-                  } else {
-                    Music newMusic = Music(
-                        name: myController.text,
-                        id: null,
-                        kind: _kind,
-                        count: int.parse(_count ?? ''),
-                        isFinished: _flag);
-                    widget.insertMusic(newMusic);
-                  }
-                  Navigator.pop(context);
-                },
-              );
-            }),
-            (widget.music.id != null)
-                ? ElevatedButton.icon(
-                    label: const Text(
-                      '削除',
-                      style: TextStyle(fontSize: 11),
-                    ),
-                    icon: const Icon(
-                      Icons.delete_forever,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    onPressed: () {
-                      showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text("本当に削除しますか？"),
-                              actions: [
-                                TextButton(
-                                  child: const Text("はい"),
-                                  onPressed: () {
-                                    widget.deleteMusic(widget.music.id!);
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                                TextButton(
-                                    child: const Text("いいえ"),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    })
-                              ],
-                            );
-                          }).then((value) => Navigator.pop(context));
-                    })
-                : const SizedBox(
-                    width: 60,
+        ]),
+      ),
+      actions: [
+        ButtonBar(children: <Widget>[
+          Builder(builder: (context) {
+            return ElevatedButton.icon(
+              label: const Text(
+                '保存',
+                style: TextStyle(fontSize: 11),
+              ),
+              icon: const Icon(
+                Icons.save,
+                color: Colors.white,
+                size: 18,
+              ),
+              onPressed: () {
+                if (widget.music.id != null) {
+                  Music newMusic = Music(
+                      name: myController.text,
+                      id: widget.music.id,
+                      kind: _kind,
+                      count: int.parse(_count ?? ''),
+                      isFinished: _flag);
+                  widget.updateMusic(newMusic);
+                } else {
+                  Music newMusic = Music(
+                      name: myController.text,
+                      id: null,
+                      kind: _kind,
+                      count: int.parse(_count ?? ''),
+                      isFinished: _flag);
+                  widget.insertMusic(newMusic);
+                }
+                Navigator.pop(context);
+              },
+            );
+          }),
+          (widget.music.id != null)
+              ? ElevatedButton.icon(
+                  label: const Text(
+                    '削除',
+                    style: TextStyle(fontSize: 11),
                   ),
-          ])
-        ]));
+                  icon: const Icon(
+                    Icons.delete_forever,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text("本当に削除しますか？"),
+                            actions: [
+                              TextButton(
+                                child: const Text("はい"),
+                                onPressed: () {
+                                  widget.deleteMusic(widget.music.id!);
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              TextButton(
+                                  child: const Text("いいえ"),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  })
+                            ],
+                          );
+                        }).then((value) => Navigator.pop(context));
+                  })
+              : const SizedBox(
+                  width: 60,
+                ),
+        ])
+      ],
+    );
   }
 }

@@ -59,7 +59,7 @@ class Memo {
     final Database db = await DatabaseManager.getDatabase();
     final List<Map<String, dynamic>> maps = await db.query('memo',
         // カラム追加時はここもいじらんとあかん
-        columns: ["id", "musicId", "text", "ryoNum"],
+        columns: ["id", "musicId", "text", "ryoNum", "kaNum", "fukaNum", "maxCom", "rendaNum"],
         where: 'musicId = ?',
         whereArgs: [musicId]);
     return List.generate(maps.length, (i) {

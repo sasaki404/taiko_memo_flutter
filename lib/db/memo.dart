@@ -13,6 +13,7 @@ class Memo {
   int? fukaNum; // 不可の数
   int? maxCom; // 最大コンボ数
   int? rendaNum; // 連打数
+  String createdAt;
 
   // 名前付きコンストラクタ
   Memo(
@@ -23,7 +24,8 @@ class Memo {
       this.kaNum,
       this.fukaNum,
       this.maxCom,
-      this.rendaNum});
+      this.rendaNum,
+      required this.createdAt});
 
   // Map型のオブジェクトへ変換
   Map<String, Object?> toMap() {
@@ -35,7 +37,8 @@ class Memo {
       'kaNum': kaNum,
       'fukaNum': fukaNum,
       'maxCom': maxCom,
-      'rendaNum': rendaNum
+      'rendaNum': rendaNum,
+      'createdAt': createdAt,
     };
   }
 
@@ -59,9 +62,20 @@ class Memo {
     final Database db = await DatabaseManager.getDatabase();
     final List<Map<String, dynamic>> maps = await db.query('memo',
         // カラム追加時はここもいじらんとあかん
-        columns: ["id", "musicId", "text", "ryoNum", "kaNum", "fukaNum", "maxCom", "rendaNum"],
+        columns: [
+          "id",
+          "musicId",
+          "text",
+          "ryoNum",
+          "kaNum",
+          "fukaNum",
+          "maxCom",
+          "rendaNum",
+          "createdAt"
+        ],
         where: 'musicId = ?',
-        whereArgs: [musicId]);
+        whereArgs: [musicId],
+        orderBy: 'createdAt DESC');
     return List.generate(maps.length, (i) {
       return Memo(
           id: maps[i]['id'],
@@ -71,7 +85,8 @@ class Memo {
           kaNum: maps[i]['kaNum'],
           fukaNum: maps[i]['fukaNum'],
           maxCom: maps[i]['maxCom'],
-          rendaNum: maps[i]['rendaNum']);
+          rendaNum: maps[i]['rendaNum'],
+          createdAt: maps[i]['createdAt']);
     });
   }
 

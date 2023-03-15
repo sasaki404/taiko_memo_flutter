@@ -8,7 +8,7 @@ class DatabaseManager {
   static const String musicTableQuery =
       "CREATE TABLE music (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, kind TEXT, count INTEGER, difficulty TEXT, target TEXT, description TEXT, isFinished INTEGER, deadline TEXT, finishedAt TEXT)";
   static const String memoTableQuery =
-      "CREATE TABLE memo (id INTEGER PRIMARY KEY, musicId INTEGER, text TEXT, ryoNum INTEGER, kaNum INTEGER, fukaNum INTEGER, maxCom INTEGER, rendaNum INTEGER, FOREIGN KEY(musicId) REFERENCES music(id))";
+      "CREATE TABLE memo (id INTEGER PRIMARY KEY, musicId INTEGER, text TEXT, ryoNum INTEGER, kaNum INTEGER, fukaNum INTEGER, maxCom INTEGER, rendaNum INTEGER, createdAt TEXT, FOREIGN KEY(musicId) REFERENCES music(id))";
 
   // アプリに組み込まれているデータベースを取得する
   static Future<Database> getDatabase() async {

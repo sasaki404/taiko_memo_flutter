@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'db/memo.dart';
+import 'package:intl/intl.dart';
 
 // 楽曲に関するメモなどを表示させるページ
 class MusicPage extends StatefulWidget {
@@ -92,8 +93,16 @@ class _MusicPageState extends State<MusicPage> {
                     itemBuilder: (context, index) {
                       return Card(
                         child: ListTile(
-                          title: Text(
-                              '良:${_memoList[index].ryoNum} 可:${_memoList[index].kaNum} 不可:${_memoList[index].fukaNum}\n連打:${_memoList[index].rendaNum} 最大コンボ:${_memoList[index].maxCom}\n良の割合:${((_memoList[index].ryoNum ?? 0) * 100 / noteNum).toStringAsFixed(2)}% 叩けた率:${((noteNum - (_memoList[index].fukaNum ?? 0)) * 100 / noteNum).toStringAsFixed(2)}%\n\n${_memoList[index].text}'),
+                          title: Column(
+                            children: [
+                              Text(
+                                  '良:${_memoList[index].ryoNum} 可:${_memoList[index].kaNum} 不可:${_memoList[index].fukaNum}\n連打:${_memoList[index].rendaNum} 最大コンボ:${_memoList[index].maxCom}\n良の割合:${((_memoList[index].ryoNum ?? 0) * 100 / noteNum).toStringAsFixed(2)}% 叩けた率:${((noteNum - (_memoList[index].fukaNum ?? 0)) * 100 / noteNum).toStringAsFixed(2)}%'),
+                              (_memoList[index].text == '')
+                                  ? SizedBox()
+                                  : Text('<メモ>\n${_memoList[index].text}')
+                            ],
+                          ),
+                          subtitle: Text('${_memoList[index].createdAt}'),
                           onTap: () {
                             // 編集ダイアログ実装
                             myController.text = _memoList[index].text;
@@ -254,7 +263,9 @@ class _MusicPageState extends State<MusicPage> {
                                                     rendaNum: int.parse(
                                                         rendaNumController
                                                             .text),
-                                                    text: myController.text);
+                                                    text: myController.text,
+                                                    createdAt: _memoList[index]
+                                                        .createdAt);
                                                 await Memo.updateMemo(_memo);
                                                 final List<Memo> memos =
                                                     await Memo.getMemos(
@@ -446,16 +457,19 @@ class _MusicPageState extends State<MusicPage> {
                   ElevatedButton(
                     child: Text('保存'),
                     onPressed: () async {
+                      DateTime dateTime = DateTime.now();
+                      String formattedDate =
+                          DateFormat('yyyy/MM/dd/HH:mm').format(dateTime);
                       Memo _memo = Memo(
-                        id: null,
-                        ryoNum: int.parse(ryoController.text),
-                        kaNum: int.parse(kaController.text),
-                        fukaNum: int.parse(fukaController.text),
-                        maxCom: int.parse(maxComController.text),
-                        rendaNum: int.parse(rendaNumController.text),
-                        text: myController.text,
-                        musicId: widget.id,
-                      );
+                          id: null,
+                          ryoNum: int.parse(ryoController.text),
+                          kaNum: int.parse(kaController.text),
+                          fukaNum: int.parse(fukaController.text),
+                          maxCom: int.parse(maxComController.text),
+                          rendaNum: int.parse(rendaNumController.text),
+                          text: myController.text,
+                          musicId: widget.id,
+                          createdAt: formattedDate);
                       await Memo.insertMemo(_memo);
                       final List<Memo> memos = await Memo.getMemos(widget.id);
                       setState(() {

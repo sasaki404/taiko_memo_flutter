@@ -34,6 +34,11 @@ class _MusicPageState extends State<MusicPage> {
 
   // 結果を分析する。getMemosを実行するタイミングで呼び出す
   void analyzeResult() {
+    aveRyo = 0;
+    aveKa = 0;
+    aveFuka = 0;
+    aveMaxCom = 0;
+    aveRenda = 0;
     int n = _memoList.length;
     if (noteNum == 0 && n > 0) {
       noteNum = (_memoList[0].ryoNum ?? 0) +
@@ -88,7 +93,7 @@ class _MusicPageState extends State<MusicPage> {
                       return Card(
                         child: ListTile(
                           title: Text(
-                              '良:${_memoList[index].ryoNum} 可:${_memoList[index].kaNum} 不可:${_memoList[index].fukaNum}\n連打:${_memoList[index].rendaNum} 最大コンボ:${_memoList[index].maxCom}\n${_memoList[index].text}'),
+                              '良:${_memoList[index].ryoNum} 可:${_memoList[index].kaNum} 不可:${_memoList[index].fukaNum}\n連打:${_memoList[index].rendaNum} 最大コンボ:${_memoList[index].maxCom}\n良の割合:${((_memoList[index].ryoNum ?? 0) * 100 / noteNum).toStringAsFixed(2)}% 叩けた率:${((noteNum - (_memoList[index].fukaNum ?? 0)) * 100 / noteNum).toStringAsFixed(2)}%\n\n${_memoList[index].text}'),
                           onTap: () {
                             // 編集ダイアログ実装
                             myController.text = _memoList[index].text;
@@ -338,125 +343,131 @@ class _MusicPageState extends State<MusicPage> {
         onPressed: () {
           showDialog(
             context: context,
-            builder: (_) => AlertDialog(
-              title: Text("記録・メモを登録"),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text("良"),
-                    SizedBox(
-                      width: 80,
-                      child: TextField(
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        controller: ryoController,
-                        maxLines: 1,
-                        decoration:
-                            InputDecoration(border: UnderlineInputBorder()),
-                        textInputAction: TextInputAction.next,
+            builder: (_) {
+              final _focusNode = FocusNode();
+              return AlertDialog(
+                title: Text("記録・メモを登録"),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text("良"),
+                      SizedBox(
+                        width: 80,
+                        child: TextField(
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          controller: ryoController,
+                          maxLines: 1,
+                          focusNode: _focusNode,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            border: UnderlineInputBorder(),
+                          ),
+                          textInputAction: TextInputAction.next,
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text("可"),
-                    SizedBox(
-                      width: 80,
-                      child: TextField(
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        controller: kaController,
-                        maxLines: 1,
-                        decoration:
-                            InputDecoration(border: UnderlineInputBorder()),
-                        textInputAction: TextInputAction.next,
+                      SizedBox(
+                        height: 10,
                       ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text("不可"),
-                    SizedBox(
-                      width: 80,
-                      child: TextField(
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        controller: fukaController,
-                        maxLines: 1,
-                        decoration:
-                            InputDecoration(border: UnderlineInputBorder()),
-                        textInputAction: TextInputAction.next,
+                      Text("可"),
+                      SizedBox(
+                        width: 80,
+                        child: TextField(
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          controller: kaController,
+                          maxLines: 1,
+                          decoration:
+                              InputDecoration(border: UnderlineInputBorder()),
+                          textInputAction: TextInputAction.next,
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text("連打数"),
-                    SizedBox(
-                      width: 80,
-                      child: TextField(
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        controller: rendaNumController,
-                        maxLines: 1,
-                        decoration:
-                            InputDecoration(border: UnderlineInputBorder()),
-                        textInputAction: TextInputAction.next,
+                      SizedBox(
+                        height: 10,
                       ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text("最大コンボ数"),
-                    SizedBox(
-                      width: 80,
-                      child: TextField(
-                        textAlign: TextAlign.center,
-                        keyboardType: TextInputType.number,
-                        controller: maxComController,
-                        maxLines: 1,
-                        decoration:
-                            InputDecoration(border: UnderlineInputBorder()),
-                        textInputAction: TextInputAction.done,
+                      Text("不可"),
+                      SizedBox(
+                        width: 80,
+                        child: TextField(
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          controller: fukaController,
+                          maxLines: 1,
+                          decoration:
+                              InputDecoration(border: UnderlineInputBorder()),
+                          textInputAction: TextInputAction.next,
+                        ),
                       ),
-                    ),
-                    Text('${widget.musicName}のメモを入力するドン！'),
-                    TextField(
-                      maxLines: 10,
-                      keyboardType: TextInputType.multiline,
-                      decoration:
-                          const InputDecoration(border: OutlineInputBorder()),
-                      controller: myController,
-                    ),
-                  ],
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text("連打数"),
+                      SizedBox(
+                        width: 80,
+                        child: TextField(
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          controller: rendaNumController,
+                          maxLines: 1,
+                          decoration:
+                              InputDecoration(border: UnderlineInputBorder()),
+                          textInputAction: TextInputAction.next,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text("最大コンボ数"),
+                      SizedBox(
+                        width: 80,
+                        child: TextField(
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          controller: maxComController,
+                          maxLines: 1,
+                          decoration:
+                              InputDecoration(border: UnderlineInputBorder()),
+                          textInputAction: TextInputAction.done,
+                        ),
+                      ),
+                      Text('${widget.musicName}のメモを入力するドン！'),
+                      TextField(
+                        maxLines: 10,
+                        keyboardType: TextInputType.multiline,
+                        decoration:
+                            const InputDecoration(border: OutlineInputBorder()),
+                        controller: myController,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              actions: [
-                ElevatedButton(
-                  child: Text('保存'),
-                  onPressed: () async {
-                    Memo _memo = Memo(
-                      id: null,
-                      ryoNum: int.parse(ryoController.text),
-                      kaNum: int.parse(kaController.text),
-                      fukaNum: int.parse(fukaController.text),
-                      maxCom: int.parse(maxComController.text),
-                      rendaNum: int.parse(rendaNumController.text),
-                      text: myController.text,
-                      musicId: widget.id,
-                    );
-                    await Memo.insertMemo(_memo);
-                    final List<Memo> memos = await Memo.getMemos(widget.id);
-                    setState(() {
-                      _memoList = memos;
-                    });
-                    analyzeResult();
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
+                actions: [
+                  ElevatedButton(
+                    child: Text('保存'),
+                    onPressed: () async {
+                      Memo _memo = Memo(
+                        id: null,
+                        ryoNum: int.parse(ryoController.text),
+                        kaNum: int.parse(kaController.text),
+                        fukaNum: int.parse(fukaController.text),
+                        maxCom: int.parse(maxComController.text),
+                        rendaNum: int.parse(rendaNumController.text),
+                        text: myController.text,
+                        musicId: widget.id,
+                      );
+                      await Memo.insertMemo(_memo);
+                      final List<Memo> memos = await Memo.getMemos(widget.id);
+                      setState(() {
+                        _memoList = memos;
+                      });
+                      analyzeResult();
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              );
+            },
           ).then((value) {
             analyzeResult();
             myController.clear();
